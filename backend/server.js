@@ -58,7 +58,6 @@ async function save() {
 async function open() {
   const res = await readFile("data.json", "utf-8");
   items = JSON.parse(res);
-  console.log("open", items);
 }
 
 app.get("/users", async (req, res) => {
@@ -67,7 +66,6 @@ app.get("/users", async (req, res) => {
 });
 
 app.post("/users", async (req, res) => {
-  await openUsers();
   var status= await statusCreateUser(req.body);
   if(status){
     users.unshift(req.body);
@@ -77,15 +75,33 @@ app.post("/users", async (req, res) => {
   res.json(status);
 });
 
+
 async function statusCreateUser(user) {
-    var status=false;
+  var status=false;
   const result = users.filter((u) => u.id == user.id);
   if (!result[0]) {
-    status=true;
-  } else {
     status=false;
+  } else {
+    status=true;
   }
   return status;
+}
+
+app.post("/login", async (req, res) => {
+  var status= await validarLogin(req.body);
+  console.log(status)
+  res.json(status);
+}); 
+
+async function validarLogin(user) {
+const result = users.filter((u) => u.email == user.email && u.password==user.password);
+console.log(result)
+if (!result[0]) {
+  status=false;
+} else {
+  status=true;
+}
+return status;
 }
 
 async function saveUser() {
@@ -95,9 +111,10 @@ async function saveUser() {
 async function openUsers() {
   const res = await readFile("user.json", "utf-8");
   users = JSON.parse(res);
-  console.log("open", users);
 }
 
 app.listen(3000, () => {
   console.log("servidor iniciado...");
+  open();
+  openUsers();
 });
